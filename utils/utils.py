@@ -57,8 +57,24 @@ def show_points(ax, coords: List[List[float]], labels: List[int], size=375):
 
 def get_clicked_point(img_path):
     img = cv2.imread(img_path)
-    cv2.namedWindow("image")
-    cv2.imshow("image", img)
+    original_img = img.copy()
+    cv2.namedWindow("Select Point")
+    
+    # Add instruction text to the image
+    instruction_img = img.copy()
+    cv2.putText(instruction_img, "Left-click to select point", (10, 30), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    cv2.putText(instruction_img, "Right-click to confirm and continue", (10, 60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    cv2.putText(instruction_img, "Press 'q' to quit", (10, 90), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    
+    cv2.imshow("Select Point", instruction_img)
+    
+    print("Instructions:")
+    print("- Left-click to select/update point")
+    print("- Right-click to confirm selection and continue")
+    print("- Press 'q' to quit")
 
     last_point = []
     keep_looping = True
@@ -71,15 +87,27 @@ def get_clicked_point(img_path):
                 cv2.circle(img, tuple(last_point), 5, (0, 0, 0), -1)
             last_point = [x, y]
             cv2.circle(img, tuple(last_point), 5, (0, 0, 255), -1)
-            cv2.imshow("image", img)
+            
+            # Show updated image with instructions
+            display_img = img.copy()
+            cv2.putText(display_img, "Right-click to confirm", (10, 30), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.imshow("Select Point", display_img)
+            print(f"Point selected: ({x}, {y}) - Right-click to confirm")
+            
         elif event == cv2.EVENT_RBUTTONDOWN:
+            print("Point confirmed! Continuing...")
             keep_looping = False
 
-    cv2.setMouseCallback("image", mouse_callback)
+    cv2.setMouseCallback("Select Point", mouse_callback)
 
     while keep_looping:
-        cv2.waitKey(1)
+        key = cv2.waitKey(30) & 0xFF  # Changed from 1 to 30 milliseconds
+        if key == ord('q'):
+            print("Quitting...")
+            keep_looping = False
+            last_point = []
+            break
 
     cv2.destroyAllWindows()
-
     return last_point

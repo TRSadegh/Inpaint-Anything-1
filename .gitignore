@@ -17,5 +17,7 @@ pretrained_models/big-lama
 *.pth
 
 results/*
+.venv/
 
-
+data/
+output/
